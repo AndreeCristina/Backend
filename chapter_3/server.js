@@ -4,7 +4,10 @@ const app = express(); //creeaza backend-ul aplicatie noastre
 const PORT = 8383;
 const db = require("./dbClient");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const authMiddleware = require("./middleware/auth");
+
+const path = require("path");
+const multer = require("multer");
 
 const cors = require("cors");
 
@@ -17,6 +20,11 @@ app.use(
 );
 
 app.use(express.json());
+const upload = multer({
+  dest: path.join(__dirname, "uploads"),
+});
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.post("/api/auth", async (req, res) => {
   try {
@@ -56,34 +64,52 @@ app.post("/api/auth", async (req, res) => {
   }
 });
 
-app.post("/api/retete", async (req, res) => {
-  try {
-    const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
+app.post(
+  "/api/retete",
+  authMiddleware,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
 
-    if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
-      return res
-        .status(400)
-        .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
+      if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
+        return res
+          .status(400)
+          .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
+      }
+      let imageUrl;
+
+      if (req.file) {
+        imageUrl = "/uploads/" + req.file.filename;
+      } else {
+        imageUrl = null;
+      }
+
+      const reteta = await db.reteta.create({
+        data: {
+          titlu,
+          descriere,
+          timpMinute: Number(timpMinute),
+          categorie,
+          dificultate,
+          imageUrl: imageUrl,
+        },
+      });
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      res.status(201).json({ user, token });
+
+      res.status(201).json(reteta);
+    } catch (err) {
+      console.error("Eroare la crearea rețetei:", err);
+      res
+        .status(500)
+        .json({ message: "Eroare la crearea rețetei", error: err.message });
     }
-
-    const reteta = await db.reteta.create({
-      data: {
-        titlu,
-        descriere,
-        timpMinute: Number(timpMinute),
-        categorie,
-        dificultate,
-      },
-    });
-
-    res.status(201).json(reteta);
-  } catch (err) {
-    console.error("Eroare la crearea rețetei:", err);
-    res
-      .status(500)
-      .json({ message: "Eroare la crearea rețetei", error: err.message });
   }
-});
+);
 
 app.get("/api/retete", async (req, res) => {
   try {
