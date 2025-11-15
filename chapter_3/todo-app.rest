@@ -1,0 +1,9 @@
+POST http://localhost:8383/api/auth
+Content-Type: application/json
+
+{
+  "numeUtilizator": "testuser",
+  "email": "test@mail.com",
+  "parola": "1234"
+}
+

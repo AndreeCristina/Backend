@@ -1,0 +1,44 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Dificultate {
+  USOR
+  MEDIU
+  GREU
+}
+
+enum Categorie {
+  DULCE
+  SARAT
+}
+
+model Reteta {
+  id          Int          @id @default(autoincrement())
+  titlu       String
+  descriere   String
+  timpMinute  Int
+  categorie   Categorie
+  dificultate Dificultate
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  numeUtilizator  String   @unique
+  email           String   @unique
+  parola          String
+  prenume         String?
+  numeFamilie     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
