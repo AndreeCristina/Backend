@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express"); //accesam express
 const app = express(); //creeaza backend-ul aplicatie noastre
 const PORT = 8383;
@@ -82,6 +83,19 @@ app.post("/api/retete", async (req, res) => {
     res
       .status(500)
       .json({ message: "Eroare la crearea rețetei", error: err.message });
+  }
+});
+
+app.get("/api/retete", async (req, res) => {
+  try {
+    const retete = await db.reteta.findMany();
+    res.status(200).json(retete);
+  } catch (err) {
+    console.error("Eroare la obținerea rețetelor:", err);
+    res.status(500).json({
+      message: "Eroare la obținerea rețetelor",
+      error: err.message,
+    });
   }
 });
 
