@@ -27,7 +27,6 @@ app.post("/api/auth", async (req, res) => {
         .json({ message: "Te rog completează toate câmpurile." });
     }
 
-    // verificăm dacă emailul există deja
     const userExistent = await db.user.findUnique({
       where: { email },
     });
