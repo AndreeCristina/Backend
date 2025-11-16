@@ -11,6 +11,7 @@ const multer = require("multer");
 
 const cors = require("cors");
 
+const jwt = require("jsonwebtoken");
 const JWT_SECRET = "proiectAndreea";
 
 app.use(
@@ -26,7 +27,7 @@ const upload = multer({
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.post("/api/auth", async (req, res) => {
+app.post("/api/register", async (req, res) => {
   try {
     const { numeUtilizator, email, parola } = req.body;
 
@@ -54,7 +55,7 @@ app.post("/api/auth", async (req, res) => {
       },
     });
 
-    res.status(201).json({ user });
+    res.status(201).json({ message: "Utilizator creat cu succes", user });
   } catch (err) {
     console.error("Eroare la înregistrare:", err);
     res.status(500).json({
@@ -64,52 +65,78 @@ app.post("/api/auth", async (req, res) => {
   }
 });
 
-app.post(
-  "/api/retete",
-  authMiddleware,
-  upload.single("image"),
-  async (req, res) => {
-    try {
-      const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, parola } = req.body;
 
-      if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
-        return res
-          .status(400)
-          .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
-      }
-      let imageUrl;
-
-      if (req.file) {
-        imageUrl = "/uploads/" + req.file.filename;
-      } else {
-        imageUrl = null;
-      }
-
-      const reteta = await db.reteta.create({
-        data: {
-          titlu,
-          descriere,
-          timpMinute: Number(timpMinute),
-          categorie,
-          dificultate,
-          imageUrl: imageUrl,
-        },
-      });
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
-      res.status(201).json({ user, token });
-
-      res.status(201).json(reteta);
-    } catch (err) {
-      console.error("Eroare la crearea rețetei:", err);
-      res
-        .status(500)
-        .json({ message: "Eroare la crearea rețetei", error: err.message });
+    if (!email || !parola) {
+      return res
+        .status(400)
+        .json({ message: "Te rog completează email și parola." });
     }
+
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Email sau parolă greșită." });
+    }
+
+    const parolaCorecta = await bcrypt.compare(parola, user.parola);
+    if (!parolaCorecta) {
+      return res.status(400).json({ message: "Email sau parolă greșită." });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({ token });
+  } catch (err) {
+    console.error("Eroare la login:", err);
+    res.status(500).json({
+      message: "Eroare la login",
+      error: err.message,
+    });
   }
-);
+});
+
+app.post("/api/retete", upload.single("image"), async (req, res) => {
+  try {
+    const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
+
+    if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
+      return res
+        .status(400)
+        .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
+    }
+    let imageUrl;
+
+    if (req.file) {
+      imageUrl = "/uploads/" + req.file.filename;
+    } else {
+      imageUrl = null;
+    }
+
+    const reteta = await db.reteta.create({
+      data: {
+        titlu,
+        descriere,
+        timpMinute: Number(timpMinute),
+        categorie,
+        dificultate,
+        imageUrl: imageUrl,
+      },
+    });
+    res.status(201).json(reteta);
+  } catch (err) {
+    console.error("Eroare la crearea rețetei:", err);
+    res
+      .status(500)
+      .json({ message: "Eroare la crearea rețetei", error: err.message });
+  }
+});
 
 app.get("/api/retete", async (req, res) => {
   try {
