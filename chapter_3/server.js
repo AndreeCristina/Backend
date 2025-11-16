@@ -3,6 +3,7 @@ const app = express(); //creeaza backend-ul aplicatie noastre
 const PORT = 8383;
 const db = require("./dbClient");
 const bcrypt = require("bcryptjs");
+const auth = require("./auth");
 
 const path = require("path");
 const multer = require("multer");
@@ -10,7 +11,7 @@ const multer = require("multer");
 const cors = require("cors");
 
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "proiectAndreea";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(
   cors({
@@ -100,7 +101,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.post("/api/retete", upload.single("image"), async (req, res) => {
+app.post("/api/retete", auth, upload.single("image"), async (req, res) => {
   try {
     const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
 
@@ -143,7 +144,7 @@ app.post("/api/retete", upload.single("image"), async (req, res) => {
   }
 });
 
-app.get("/api/retete", async (req, res) => {
+app.get("/api/retete", auth, async (req, res) => {
   try {
     const retete = await db.reteta.findMany();
     res.status(200).json(retete);
@@ -156,7 +157,7 @@ app.get("/api/retete", async (req, res) => {
   }
 });
 
-app.delete("/api/retete/:id", async (req, res) => {
+app.delete("/api/retete/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -177,7 +178,7 @@ app.delete("/api/retete/:id", async (req, res) => {
   }
 });
 
-app.put("/api/retete/:id", upload.single("image"), async (req, res) => {
+app.put("/api/retete/:id", auth, upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
@@ -230,7 +231,7 @@ app.put("/api/retete/:id", upload.single("image"), async (req, res) => {
   }
 });
 
-app.get("/api/retete/:id", async (req, res) => {
+app.get("/api/retete/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
 

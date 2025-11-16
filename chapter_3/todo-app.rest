@@ -2,7 +2,7 @@
 //Content-Type: application/json
 
 //{
-  //"titlu": "andreea@gmail.com",
+  //"email": "andreea@gmail.com",
   //"parola": "licenta"
 //}
 
@@ -10,15 +10,8 @@
 
 
 
-//GET http://localhost:8383/api/retete
+GET http://localhost:8383/api/retete
 
 
-PUT http://localhost:8383/api/retete/
-Content-Type: application/json
-
-{
-  //"titlu": "andreea@gmail.com",
-  //"parola": "licenta"
-}
 
 
