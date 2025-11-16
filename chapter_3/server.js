@@ -1,10 +1,8 @@
-require("dotenv").config();
 const express = require("express"); //accesam express
 const app = express(); //creeaza backend-ul aplicatie noastre
 const PORT = 8383;
 const db = require("./dbClient");
 const bcrypt = require("bcryptjs");
-const authMiddleware = require("./middleware/auth");
 
 const path = require("path");
 const multer = require("multer");
@@ -80,12 +78,12 @@ app.post("/api/login", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Email sau parolă greșită." });
+      return res.status(400).json({ message: "Emailul nu există în sistem." });
     }
 
     const parolaCorecta = await bcrypt.compare(parola, user.parola);
     if (!parolaCorecta) {
-      return res.status(400).json({ message: "Email sau parolă greșită." });
+      return res.status(400).json({ message: "Parola este incorectă." });
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
@@ -146,6 +144,27 @@ app.get("/api/retete", async (req, res) => {
     console.error("Eroare la obținerea rețetelor:", err);
     res.status(500).json({
       message: "Eroare la obținerea rețetelor",
+      error: err.message,
+    });
+  }
+});
+
+app.delete("/api/retete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const reteta = await db.reteta.delete({
+      where: { id: Number(id) },
+    });
+
+    res.status(200).json({
+      message: "Rețetă ștearsă cu succes",
+      reteta,
+    });
+  } catch (err) {
+    console.error("Eroare la ștergere rețetă:", err);
+    res.status(500).json({
+      message: "Eroare la ștergere rețetă",
       error: err.message,
     });
   }
