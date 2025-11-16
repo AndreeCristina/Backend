@@ -92,9 +92,9 @@ app.post("/api/login", async (req, res) => {
 
     res.json({ token });
   } catch (err) {
-    console.error("Eroare la login:", err);
+    console.error("Eroare la conectare:", err);
     res.status(500).json({
-      message: "Eroare la login",
+      message: "Eroare la conectare",
       error: err.message,
     });
   }
@@ -104,7 +104,14 @@ app.post("/api/retete", upload.single("image"), async (req, res) => {
   try {
     const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
 
-    if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
+    if (
+      !titlu ||
+      !descriere ||
+      !timpMinute ||
+      !categorie ||
+      !dificultate ||
+      !req.file
+    ) {
       return res
         .status(400)
         .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
@@ -165,6 +172,81 @@ app.delete("/api/retete/:id", async (req, res) => {
     console.error("Eroare la ștergere rețetă:", err);
     res.status(500).json({
       message: "Eroare la ștergere rețetă",
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/retete/:id", upload.single("image"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
+
+    if (
+      !titlu ||
+      !descriere ||
+      !timpMinute ||
+      !categorie ||
+      !dificultate ||
+      !req.file
+    ) {
+      return res.status(400).json({
+        message: "Lipsesc câmpuri obligatorii pentru actualizare",
+      });
+    }
+    const retetaExistenta = await db.reteta.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!retetaExistenta) {
+      return res.status(404).json({ message: "Rețeta nu există!" });
+    }
+
+    let imageUrl = retetaExistenta.imageUrl;
+
+    if (req.file) {
+      imageUrl = "/uploads/" + req.file.filename;
+    }
+
+    const reteta = await db.reteta.update({
+      where: { id: Number(id) },
+      data: {
+        titlu,
+        descriere,
+        timpMinute: Number(timpMinute),
+        categorie,
+        dificultate,
+        imageUrl: imageUrl,
+      },
+    });
+
+    res.status(200).json(reteta);
+  } catch (err) {
+    console.error("Eroare la actualizarea rețetei:", err);
+    res.status(500).json({
+      message: "Eroare la actualizarea rețetei",
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/retete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const reteta = await db.reteta.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!reteta) {
+      return res.status(404).json({ message: "Rețeta nu există" });
+    }
+
+    res.status(200).json(reteta);
+  } catch (err) {
+    console.error("Eroare la obținerea rețetei:", err);
+    res.status(500).json({
+      message: "Eroare la obținerea rețetei",
       error: err.message,
     });
   }

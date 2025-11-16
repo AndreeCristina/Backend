@@ -6,10 +6,19 @@
   //"parola": "licenta"
 //}
 
-DELETE http://localhost:8383/api/retete/14
+//DELETE http://localhost:8383/api/retete/14
 
 
 
 //GET http://localhost:8383/api/retete
+
+
+PUT http://localhost:8383/api/retete/
+Content-Type: application/json
+
+{
+  //"titlu": "andreea@gmail.com",
+  //"parola": "licenta"
+}
 
 
