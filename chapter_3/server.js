@@ -13,11 +13,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 const upload = multer({
