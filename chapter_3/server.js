@@ -26,10 +26,6 @@ const upload = multer({
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
-
 app.post("/api/register", async (req, res) => {
   try {
     const { numeUtilizator, email, parola } = req.body;
@@ -255,6 +251,10 @@ app.get("/api/retete/:id", auth, async (req, res) => {
       error: err.message,
     });
   }
+});
+
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
 });
 
 app.listen(PORT, () => console.log(`Server has started on: ${PORT}`));
