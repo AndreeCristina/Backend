@@ -259,6 +259,34 @@ app.get("/api/retete/:id", auth, async (req, res) => {
   }
 });
 
+app.post("/api/user/detalii", auth, async (req, res) => {
+  try {
+    const { prenume, numeFamilie } = req.body;
+    const userId = req.user.id;
+
+    if (!prenume && !numeFamilie) {
+      return res.status(400).json({
+        message: "Trimite prenume sau numeFamilie.",
+      });
+    }
+
+    const user = await db.user.update({
+      where: { id: userId },
+      data: { prenume, numeFamilie },
+    });
+
+    res.json({
+      message: "Datele utilizatorului au fost salvate.",
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Eroare la salvarea datelor utilizatorului",
+    });
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
