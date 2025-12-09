@@ -40,6 +40,16 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ message: "Email deja folosit." });
     }
 
+    const numeUtilizatorExistent = await db.user.findUnique({
+      where: { numeUtilizator },
+    });
+
+    if (numeUtilizatorExistent) {
+      return res
+        .status(400)
+        .json({ message: "Numele de utilizator a fost deja folosit." });
+    }
+
     const parolaHash = await bcrypt.hash(parola, 10);
 
     const user = await db.user.create({
