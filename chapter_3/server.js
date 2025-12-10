@@ -111,14 +111,7 @@ app.post("/api/retete", auth, upload.single("image"), async (req, res) => {
   try {
     const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
 
-    if (
-      !titlu ||
-      !descriere ||
-      !timpMinute ||
-      !categorie ||
-      !dificultate ||
-      !req.file
-    ) {
+    if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
       return res
         .status(400)
         .json({ message: "Lipsesc câmpuri obligatorii pentru rețetă" });
@@ -189,14 +182,7 @@ app.put("/api/retete/:id", auth, upload.single("image"), async (req, res) => {
     const { id } = req.params;
     const { titlu, descriere, timpMinute, categorie, dificultate } = req.body;
 
-    if (
-      !titlu ||
-      !descriere ||
-      !timpMinute ||
-      !categorie ||
-      !dificultate ||
-      !req.file
-    ) {
+    if (!titlu || !descriere || !timpMinute || !categorie || !dificultate) {
       return res.status(400).json({
         message: "Lipsesc câmpuri obligatorii pentru actualizare",
       });
